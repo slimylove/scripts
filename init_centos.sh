@@ -6,16 +6,164 @@
 set -e
 set -x
 
+readonly HOME_DIR=$(cd "$(dirname "$0")";pwd)
 
-# set yum repo to tsinghua
-echo "set yum repo to tsinghua"
-sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-    -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
-    -i.bak \
-    /etc/yum.repos.d/CentOS-*.repo
+_exists() {
+  cmd="$1"
+  if [ -z "$cmd" ]; then
+    _usage "Usage: _exists cmd"
+    return 1
+  fi
 
-yum makecache
+  if eval type type >/dev/null 2>&1; then
+    eval type "$cmd" >/dev/null 2>&1
+  elif command >/dev/null 2>&1; then
+    command -v "$cmd" >/dev/null 2>&1
+  else
+    which "$cmd" >/dev/null 2>&1
+  fi
+  ret="$?"
+  printf "$cmd exists=$ret"
+  return $ret
+}
+
+_check_network() {
+    ping -c 1 mirrors.tuna.tsinghua.edu.cn >/dev/null 2>&1 && ping -c 1  www.baidu.com >/dev/null 2>&1
+
+    [[ $? -eq 0 ]] && echo "网络检测正常" || (echo "网络检测异常" && exit -1)
+}
 
 
-# install git
+_check_yum() {
+    # set yum repo to tsinghua
+    yum repolist -v | grep "mirrors.tuna.tsinghua.edu.cn" > /dev/null 2>&1 \
+    || (
+        sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+            -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
+            -i.bak \
+            /etc/yum.repos.d/CentOS-*.repo \
+        && yum clean \
+        && yum makecache fast
+    )
+}
+
+yum_install_base() {
+    _check_network && _check_yum
+
+    yum install -y wget vim
+}
+
+install_git() {
+    _check_network && _check_yum
+    
+    # install depend
+    printf "install depend\n"
+    yum install -y zlib-devel bzip2-devel openssl-devel ncurses-devel \
+        gcc perl-ExtUtils-MakeMaker \
+        package curl-devel expat-devel gettext-devel \
+        wget
+
+    # remove git
+    printf "remove yum git\n"
+    yum remove -y git
+
+    # download git tar
+    printf "download git tar\n"
+    cd $HOME_DIR
+    wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.28.0.tar.gz
+
+    # install git
+    printf "install git\n"
+    tar -zxvf git-2.28.0.tar.gz && cd git-2.28.0 \
+    && ./configure --prefix=/usr/local/git all \
+    && make \
+    && make install
+
+    # export git to PATH
+    printf "export git to PATH\n"
+    tee -a /etc/bashrc <<< "export PATH=$PATH:/usr/local/git/bin"
+
+    # check git version
+    printf "check git version\n"
+    source /etc/bashrc > /dev/null 2>&1
+    (_exists git && git --version > /dev/null 2>&1) && echo "git install ok" || echo "git install fail"
+}
+
+
+function install_tmux_2() {
+    _check_network && _check_yum
+    
+    # install depend
+    printf "install depend\n"
+    yum install -y gcc kernel-devel make ncurses-devel curl
+
+    # make install libevent
+    printf "make install libevent\n"
+    cd $HOME_DIR \
+    && curl -LOk https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz \
+    && tar -xf libevent-2.1.8-stable.tar.gz \
+    && cd libevent-2.1.8-stable \
+    && ./configure --prefix=/usr/local \
+    && make \
+    && make install
+
+    # make install tmux
+    printf "make install tmux\n"
+    cd $HOME_DIR \
+    && curl -LOk https://github.com/tmux/tmux/releases/download/2.8/tmux-2.8.tar.gz \
+    && tar -xf tmux-2.8.tar.gz \
+    && cd tmux-2.8 \
+    && LDFLAGS="-L/usr/local/lib -Wl,-rpath=/usr/local/lib" ./configure --prefix=/usr/local \
+    && make \
+    && make install
+
+    # check tmux version
+    printf "check tmux version\n"
+    (_exists tmux && tmux -V > /dev/null 2>&1) && echo "tmux install ok" || echo "tmux install fail"
+}
+
+install_docker() {
+    _check_network && _check_yum
+
+    # install depend
+    printf "install depend\n"
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+
+    # config docker repo
+    printf "config docker repo\n"
+    yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo \
+    && yum clean \
+    && yum makecache fast \
+    && yum update -y
+
+    # install docker-ce
+    printf "install docker-ce\n"
+    echo yes | yum install -y docker-ce
+
+    # add user to docker group
+    printf "add user to docker group\n"
+    usermod -aG docker $(whoami)
+
+    # add registry-mirror
+    printf "add registry-mirror\n"
+    [[ ! -d /etc/docker/daemon.json ]] && mkdir /etc/docker \
+    && [[ ! -f /etc/docker/daemon.json ]] && touch /etc/docker/daemon.json \
+    && echo '{
+  "registry-mirrors": [ "https://pee6w651.mirror.aliyuncs.com", "https://bjtzu1jb.mirror.aliyuncs.com", "https://9cpn8tt6.mirror.aliyuncs.com"]
+}' > /etc/docker/daemon.json
+
+    # add docker service to start
+    printf "add docker service to start\n"
+    systemctl enable docker && systemctl start docker
+
+    # check docker version
+    printf "chekc docker version\n"
+    (_exists docker && docker -v > /dev/null 2>&1) && echo "docker install ok" || echo "docker install fail"
+}
+
+main() {
+    "$@"
+}
+
+main "$@"
 
