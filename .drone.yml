@@ -1,0 +1,17 @@
+#
+# Drone pipeline push code to github.
+#
+
+kind: pipeline
+type: docker
+name: default
+
+
+steps:
+- name: push commit
+  image: appleboy/drone-git-push
+  settings:
+    branch: master
+    remote: git@github.com:slimylove/scripts.git
+    force: false
+    commit: false
