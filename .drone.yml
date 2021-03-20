@@ -19,4 +19,8 @@ steps:
   image: alpine/git
   commands:
   - git status
-  - ls
+  - git remote add github git@github.com:slimylove/scripts.git
+  - git push github dev
+  when:
+    branch:
+    - dev
