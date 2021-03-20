@@ -23,10 +23,12 @@ steps:
   environment:
     SSH_KEY:
       from_secret: ssh_key
+    AAA_KEY: fsdfsf
   commands:
   - git status
   - git remote add github git@github.com:slimylove/scripts.git
   - echo ${SSH_KEY}
+  - echo ${AAA_KEY}
   # - cat ~/.ssh/id_rsa.pub
   # - echo yes | git push github dev
   when:
