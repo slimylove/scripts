@@ -7,6 +7,8 @@ set -e
 set -x
 
 readonly HOME_DIR=$(cd "$(dirname "$0")";pwd)
+readonly GIT_VERSION="2.28.0"
+readonly TMUX_VERSION="2.8"
 
 _exists() {
   cmd="$1"
@@ -33,7 +35,6 @@ _check_network() {
     [[ $? -eq 0 ]] && echo "网络检测正常" || (echo "网络检测异常" && exit -1)
 }
 
-
 _check_yum() {
     # set yum repo to tsinghua
     yum repolist -v | grep "mirrors.tuna.tsinghua.edu.cn" > /dev/null 2>&1 \
@@ -42,8 +43,8 @@ _check_yum() {
             -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirrors.tuna.tsinghua.edu.cn|g' \
             -i.bak \
             /etc/yum.repos.d/CentOS-*.repo \
-        && yum clean \
-        && yum makecache fast
+        && yum clean all \
+        && yum makecache
     )
 }
 
@@ -70,27 +71,30 @@ install_git() {
     # download git tar
     printf "download git tar\n"
     cd $HOME_DIR
-    wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.28.0.tar.gz
+    wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz
 
     # install git
     printf "install git\n"
-    tar -zxvf git-2.28.0.tar.gz && cd git-2.28.0 \
+    tar -zxvf git-${GIT_VERSION}.tar.gz && cd ${GIT_VERSION} \
     && ./configure --prefix=/usr/local/git all \
     && make \
     && make install
 
     # export git to PATH
     printf "export git to PATH\n"
-    tee -a /etc/bashrc <<< "export PATH=$PATH:/usr/local/git/bin"
+    echo $PATH | grep '/usr/local/git/bin' \
+    || tee -a /etc/bashrc <<< 'export PATH=$PATH:/usr/local/git/bin'
 
     # check git version
     printf "check git version\n"
     source /etc/bashrc > /dev/null 2>&1
-    (_exists git && git --version > /dev/null 2>&1) && echo "git install ok" || echo "git install fail"
+    (_exists git && git --version | grep ${GIT_VERSION}) \
+    && echo "git install ok" \
+    || echo "git install fail"
 }
 
 
-function install_tmux_2() {
+function install_tmux() {
     _check_network && _check_yum
     
     # install depend
@@ -110,16 +114,24 @@ function install_tmux_2() {
     # make install tmux
     printf "make install tmux\n"
     cd $HOME_DIR \
-    && curl -LOk https://github.com/tmux/tmux/releases/download/2.8/tmux-2.8.tar.gz \
-    && tar -xf tmux-2.8.tar.gz \
-    && cd tmux-2.8 \
-    && LDFLAGS="-L/usr/local/lib -Wl,-rpath=/usr/local/lib" ./configure --prefix=/usr/local \
+    && curl -LOk https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz \
+    && tar -xf tmux-${TMUX_VERSION}.tar.gz \
+    && cd tmux-${TMUX_VERSION} \
+    && LDFLAGS="-L/usr/local/lib -Wl,-rpath=/usr/local/lib" ./configure --prefix=/usr/local/tmux \
     && make \
     && make install
 
+    # export tmux to PATH
+    printf "export tmux to PATH\n"
+    echo $PATH | grep '/usr/local/tmux' \
+    || tee -a /etc/bashrc <<< 'export PATH=$PATH:/usr/local/tmux'
+
     # check tmux version
     printf "check tmux version\n"
-    (_exists tmux && tmux -V > /dev/null 2>&1) && echo "tmux install ok" || echo "tmux install fail"
+    source /etc/bashrc > /dev/null 2>&1
+    (_exists tmux && tmux -V | grep ${TMUX_VERSION}) \
+    && echo "tmux install ok" \
+    || echo "tmux install fail"
 }
 
 install_docker() {
@@ -158,7 +170,9 @@ install_docker() {
 
     # check docker version
     printf "chekc docker version\n"
-    (_exists docker && docker -v > /dev/null 2>&1) && echo "docker install ok" || echo "docker install fail"
+    (_exists docker && docker -v > /dev/null 2>&1) \
+    && echo "docker install ok" \
+    || echo "docker install fail"
 }
 
 main() {
