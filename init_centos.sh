@@ -81,7 +81,7 @@ install_git() {
 
     # install git
     printf "install git\n"
-    tar -zxvf git-${GIT_VERSION}.tar.gz && cd ${GIT_VERSION} \
+    tar -zxvf git-${GIT_VERSION}.tar.gz && cd git-${GIT_VERSION} \
     && ./configure --prefix=/usr/local/git all \
     && make \
     && make install
