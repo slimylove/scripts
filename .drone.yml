@@ -30,6 +30,7 @@ steps:
   - echo $${SSH_KEY}
   - echo $AAA_KEY
   - echo "aabbcc"
+  - sh t.sh
   # - cat ~/.ssh/id_rsa.pub
   # - echo yes | git push github dev
   when:
