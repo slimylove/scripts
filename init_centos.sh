@@ -3,6 +3,7 @@
 #
 #
 
+source ~/.bashrc > /dev/null
 set -e
 set -x
 
@@ -25,7 +26,7 @@ _exists() {
     which "$cmd" >/dev/null 2>&1
   fi
   ret="$?"
-  printf "$cmd exists=$ret"
+  printf "$cmd exists=$ret\n"
   return $ret
 }
 
@@ -48,13 +49,18 @@ _check_yum() {
     )
 }
 
-yum_install_base() {
+install_base() {
     _check_network && _check_yum
 
     yum install -y wget vim
 }
 
 install_git() {
+    _exists git && git --version | grep ${GIT_VERSION} \
+    && printf "git(${GIT_VERSION}) is already installed\n" && return
+
+    # check network and yum
+    printf "check network and yum\n"
     _check_network && _check_yum
     
     # install depend
@@ -83,7 +89,7 @@ install_git() {
     # export git to PATH
     printf "export git to PATH\n"
     echo $PATH | grep '/usr/local/git/bin' \
-    || tee -a /etc/bashrc <<< 'export PATH=$PATH:/usr/local/git/bin'
+    || tee -a /etc/bashrc <<< 'export PATH=/usr/local/git/bin:$PATH'
 
     # check git version
     printf "check git version\n"
@@ -95,6 +101,11 @@ install_git() {
 
 
 function install_tmux() {
+    _exists tmux && tmux -V | grep ${TMUX_VERSION} \
+    && printf "tmux(${TMUX_VERSION}) is already installed\n" && return
+
+    # check network and yum
+    printf "check network and yum\n"
     _check_network && _check_yum
     
     # install depend
@@ -123,8 +134,8 @@ function install_tmux() {
 
     # export tmux to PATH
     printf "export tmux to PATH\n"
-    echo $PATH | grep '/usr/local/tmux' \
-    || tee -a /etc/bashrc <<< 'export PATH=$PATH:/usr/local/tmux'
+    echo $PATH | grep '/usr/local/tmux/bin' \
+    || tee -a /etc/bashrc <<< 'export PATH=/usr/local/tmux/bin:$PATH'
 
     # check tmux version
     printf "check tmux version\n"
@@ -135,6 +146,9 @@ function install_tmux() {
 }
 
 install_docker() {
+
+    # check network and yum
+    printf "check network and yum\n"
     _check_network && _check_yum
 
     # install depend
@@ -173,6 +187,13 @@ install_docker() {
     (_exists docker && docker -v > /dev/null 2>&1) \
     && echo "docker install ok" \
     || echo "docker install fail"
+}
+
+install_all() {
+    install_base \
+    && install_git \
+    && install_tmux \
+    && install_docker
 }
 
 main() {
