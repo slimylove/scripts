@@ -29,6 +29,7 @@ steps:
   - git remote add github git@github.com:slimylove/scripts.git
   - echo ${SSH_KEY}
   - echo ${AAA_KEY}
+  - echo "aabbcc"
   # - cat ~/.ssh/id_rsa.pub
   # - echo yes | git push github dev
   when:
