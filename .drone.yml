@@ -18,7 +18,7 @@ steps:
   - mkdir -p /root/.ssh && chmod 700 /root/.ssh
   - echo -ne $${SSH_KEY} > /root/.ssh/id_rsa && echo >> /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
   - export GIT_SSH_COMMAND='ssh -i /root/.ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
-  - echo yes | git push github master
+  - echo yes | git push github ${DRONE_BRANCH}
   - echo yes | git push --tags
   # when:
   #   branch:
@@ -28,5 +28,5 @@ steps:
 
 trigger:
   ref:
-  - refs/heads/dev
+  - refs/heads/master
   - refs/tags/*
