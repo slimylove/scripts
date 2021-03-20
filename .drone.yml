@@ -17,32 +17,32 @@ steps:
 #     commit: false
 - name: push-github
   image: alpine/git
-  volumes:
-  - name: ssh
-    path: ~/.ssh
+  # volumes:
+  # - name: ssh
+  #   path: ~/.ssh
   commands:
   - git status
   - git remote add github git@github.com:slimylove/scripts.git
-  - cat ~/.ssh/id_rsa.pub
-  - echo yes | git push github dev
+  # - cat ~/.ssh/id_rsa.pub
+  # - echo yes | git push github dev
   when:
     branch:
     - dev
-# - name: push commit
-#   image: appleboy/drone-git-push
-#   settings:
-#     remote_name: github
-#     branch: dev
-#     ssh_key:
-#       from_secret: github_key
-#   commands:
-#   - cat ~/.ssh/id_rsa
-#   - cat ~/.ssh/id_rsa.pub
-#   when:
-#     branch:
-#     - dev
+- name: push commit
+  image: appleboy/drone-git-push
+  settings:
+    remote_name: github
+    branch: dev
+    ssh_key:
+      from_secret: ssh_key
+  commands:
+  - cat ~/.ssh/id_rsa
+  - cat ~/.ssh/id_rsa.pub
+  when:
+    branch:
+    - dev
 
-volumes:
-- name: ssh
-  host: 
-    path: ~/.ssh
+# volumes:
+# - name: ssh
+#   host: 
+#     path: ~/.ssh
