@@ -15,7 +15,7 @@ steps:
 #     remote: git@github.com:slimylove/scripts.git
 #     force: false
 #     commit: false
-- name: clone
+- name: push-github
   image: alpine/git
   commands:
   - git status
