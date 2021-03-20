@@ -48,6 +48,7 @@ steps:
   # - cat /root/.ssh/id_rsa.pub
   - echo ${PLUGIN_SSH_KEY}
   - echo ${GIT_PUSH_SSH_KEY}
+  - sh t.sh
   when:
     branch:
     - dev
