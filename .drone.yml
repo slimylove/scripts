@@ -1,6 +1,6 @@
-#
+########################
 # Drone pipeline push code to github.
-#
+########################
 
 kind: pipeline
 type: docker
@@ -10,9 +10,6 @@ name: default
 steps:
 - name: push-github
   image: alpine/git
-  # volumes:
-  # - name: ssh
-  #   path: ~/.ssh
   environment:
     SSH_KEY:
       from_secret: ssh_key
@@ -24,30 +21,6 @@ steps:
   - echo -ne $${SSH_KEY} > /root/.ssh/id_rsa && echo >> /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
   - export GIT_SSH_COMMAND='ssh -i /root/.ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
   - echo yes | git push github dev
-  # - sh t.sh
-  # - cat ~/.ssh/id_rsa.pub
-  # - echo yes | git push github dev
   when:
     branch:
     - dev
-# - name: push commit
-#   image: appleboy/drone-git-push
-#   settings:
-#     remote_name: github
-#     branch: dev
-#     ssh_key:
-#       from_secret: ssh_key
-#   commands:
-  # - cat /root/.ssh/id_rsa
-  # - cat /root/.ssh/id_rsa.pub
-  # - echo ${PLUGIN_SSH_KEY}
-  # - echo ${GIT_PUSH_SSH_KEY}
-  # - sh t.sh
-  # when:
-  #   branch:
-  #   - dev
-
-# volumes:
-# - name: ssh
-#   host: 
-#     path: ~/.ssh
