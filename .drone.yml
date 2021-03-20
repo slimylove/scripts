@@ -27,7 +27,6 @@ steps:
   #   - refs/tags/*
 
 trigger:
-  branch:
-  - dev
   ref:
+  - refs/heads/dev
   - refs/tags/*
