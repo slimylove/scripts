@@ -20,8 +20,14 @@ steps:
   - export GIT_SSH_COMMAND='ssh -i /root/.ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
   - echo yes | git push github master
   - echo yes | git push --tags
-  when:
-    branch:
-    - master
-    ref:
-    - refs/tags/*
+  # when:
+  #   branch:
+  #   - master
+  #   ref:
+  #   - refs/tags/*
+
+trigger:
+  branch:
+  - dev
+  ref:
+  - refs/tags/*
