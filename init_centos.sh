@@ -187,7 +187,7 @@ install_docker() {
     # check docker version
     printf "chekc docker version\n"
     (_exists docker && docker -v > /dev/null 2>&1) \
-    && echo "docker install ok" \
+    && echo "docker($(docker -v)) install ok" \
     || echo "docker install fail"
 }
 
