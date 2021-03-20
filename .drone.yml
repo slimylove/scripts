@@ -8,13 +8,6 @@ name: default
 
 
 steps:
-# - name: push commit
-#   image: appleboy/drone-git-push
-#   settings:
-#     branch: master
-#     remote: git@github.com:slimylove/scripts.git
-#     force: false
-#     commit: false
 - name: push-github
   image: alpine/git
   # volumes:
@@ -27,31 +20,32 @@ steps:
   commands:
   - git status
   - git remote add github git@github.com:slimylove/scripts.git
-  - echo $${SSH_KEY}
-  - echo $AAA_KEY
-  - echo "aabbcc"
-  - sh t.sh
+  - mkdir -p .ssh && chmod 700 .ssh
+  - echo -ne $${SSH_KEY} > .ssh/id_rsa && chmod 600 .ssh/id_rsa
+  - export GIT_SSH_COMMAND='ssh -i .ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+  - echo yes | git push github dev
+  # - sh t.sh
   # - cat ~/.ssh/id_rsa.pub
   # - echo yes | git push github dev
   when:
     branch:
     - dev
-- name: push commit
-  image: appleboy/drone-git-push
-  settings:
-    remote_name: github
-    branch: dev
-    ssh_key:
-      from_secret: ssh_key
-  commands:
+# - name: push commit
+#   image: appleboy/drone-git-push
+#   settings:
+#     remote_name: github
+#     branch: dev
+#     ssh_key:
+#       from_secret: ssh_key
+#   commands:
   # - cat /root/.ssh/id_rsa
   # - cat /root/.ssh/id_rsa.pub
   # - echo ${PLUGIN_SSH_KEY}
   # - echo ${GIT_PUSH_SSH_KEY}
-  - sh t.sh
-  when:
-    branch:
-    - dev
+  # - sh t.sh
+  # when:
+  #   branch:
+  #   - dev
 
 # volumes:
 # - name: ssh
