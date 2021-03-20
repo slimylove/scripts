@@ -20,9 +20,13 @@ steps:
   # volumes:
   # - name: ssh
   #   path: ~/.ssh
+  environment:
+  - SSH_KEY:
+      from_secret: ssh_key
   commands:
   - git status
   - git remote add github git@github.com:slimylove/scripts.git
+  - echo ${SSH_KEY}
   # - cat ~/.ssh/id_rsa.pub
   # - echo yes | git push github dev
   when:
