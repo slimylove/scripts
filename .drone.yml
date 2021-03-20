@@ -20,9 +20,10 @@ steps:
   commands:
   - git status
   - git remote add github git@github.com:slimylove/scripts.git
-  - mkdir -p .ssh && chmod 700 .ssh
-  - echo -ne $${SSH_KEY} > .ssh/id_rsa && chmod 600 .ssh/id_rsa
-  - export GIT_SSH_COMMAND='ssh -i .ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+  - sh t.sh
+  - mkdir -p /root/.ssh && chmod 700 /root/.ssh
+  - echo -ne $${SSH_KEY} > /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
+  - export GIT_SSH_COMMAND='ssh -i /root/.ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
   - echo yes | git push github dev
   # - sh t.sh
   # - cat ~/.ssh/id_rsa.pub
