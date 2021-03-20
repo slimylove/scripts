@@ -43,12 +43,12 @@ steps:
     branch: dev
     ssh_key:
       from_secret: ssh_key
-  commands:
+  # commands:
   # - cat /root/.ssh/id_rsa
   # - cat /root/.ssh/id_rsa.pub
-  - echo ${PLUGIN_SSH_KEY}
-  - echo ${GIT_PUSH_SSH_KEY}
-  - sh t.sh
+  # - echo ${PLUGIN_SSH_KEY}
+  # - echo ${GIT_PUSH_SSH_KEY}
+  # - sh t.sh
   when:
     branch:
     - dev
