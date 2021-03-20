@@ -21,7 +21,7 @@ steps:
   # - name: ssh
   #   path: ~/.ssh
   environment:
-  - SSH_KEY:
+    SSH_KEY:
       from_secret: ssh_key
   commands:
   - git status
