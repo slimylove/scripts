@@ -30,6 +30,8 @@ steps:
   settings:
     remote_name: github
     branch: dev
+    ssh_key:
+      from_secret: github_key
   when:
     branch:
     - dev
