@@ -7,7 +7,9 @@ source ~/.bashrc > /dev/null
 set -e
 set -x
 
-readonly HOME_DIR=$(cd "$(dirname "$0")";pwd)
+readonly SCRIPT_DIR=$(cd "$(dirname "$0")";pwd)
+readonly SCRIPT_USER="${SUDO_USER:$(id -un)}"
+readonly SCRIPT_USER_HOME="$(cat /etc/passwd | grep ^${SCRIPT_USER}: | cut -d: -f 6)"
 readonly GIT_VERSION="2.28.0"
 readonly TMUX_VERSION="2.8"
 
@@ -76,7 +78,7 @@ install_git() {
 
     # download git tar
     printf "download git tar\n"
-    cd $HOME_DIR
+    cd $SCRIPT_DIR
     wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-${GIT_VERSION}.tar.gz
 
     # install git
@@ -114,7 +116,7 @@ function install_tmux() {
 
     # make install libevent
     printf "make install libevent\n"
-    cd $HOME_DIR \
+    cd $SCRIPT_DIR \
     && curl -LOk https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz \
     && tar -xf libevent-2.1.8-stable.tar.gz \
     && cd libevent-2.1.8-stable \
@@ -124,7 +126,7 @@ function install_tmux() {
 
     # make install tmux
     printf "make install tmux\n"
-    cd $HOME_DIR \
+    cd $SCRIPT_DIR \
     && curl -LOk https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz \
     && tar -xf tmux-${TMUX_VERSION}.tar.gz \
     && cd tmux-${TMUX_VERSION} \
@@ -146,6 +148,8 @@ function install_tmux() {
 }
 
 install_docker() {
+    _exists docker && docker -v \
+    && printf "$(docker -v) is already installed\n" && return
 
     # check network and yum
     printf "check network and yum\n"
@@ -158,9 +162,7 @@ install_docker() {
     # config docker repo
     printf "config docker repo\n"
     yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo \
-    && yum clean \
-    && yum makecache fast \
-    && yum update -y
+    && yum makecache fast
 
     # install docker-ce
     printf "install docker-ce\n"
@@ -168,7 +170,7 @@ install_docker() {
 
     # add user to docker group
     printf "add user to docker group\n"
-    usermod -aG docker $(whoami)
+    usermod -aG docker ${SCRIPT_USER}
 
     # add registry-mirror
     printf "add registry-mirror\n"
