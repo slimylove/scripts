@@ -20,7 +20,7 @@ steps:
   commands:
   - git status
   - git remote add github git@github.com:slimylove/scripts.git
-  - git push github dev
+  - echo yes | git push github dev
   when:
     branch:
     - dev
