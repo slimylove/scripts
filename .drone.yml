@@ -36,8 +36,9 @@ steps:
     ssh_key:
       from_secret: ssh_key
   commands:
-  - cat /root/.ssh/id_rsa
-  - cat /root/.ssh/id_rsa.pub
+  # - cat /root/.ssh/id_rsa
+  # - cat /root/.ssh/id_rsa.pub
+  - echo ${PLUGIN_SSH_KEY}
   when:
     branch:
     - dev
