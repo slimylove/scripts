@@ -8,10 +8,15 @@ name: default
 
 
 steps:
-- name: push commit
-  image: appleboy/drone-git-push
-  settings:
-    branch: master
-    remote: git@github.com:slimylove/scripts.git
-    force: false
-    commit: false
+# - name: push commit
+#   image: appleboy/drone-git-push
+#   settings:
+#     branch: master
+#     remote: git@github.com:slimylove/scripts.git
+#     force: false
+#     commit: false
+- name: clone
+  image: alpine/git
+  commands:
+  - git status
+  - ls
