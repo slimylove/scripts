@@ -42,9 +42,9 @@ steps:
     # branch:
     # - master
     ref:
-    - refs/tags/*
+    - refs/tags/v*
 
 trigger:
   ref:
   - refs/heads/master
-  - refs/tags/*
+  - refs/tags/v*
