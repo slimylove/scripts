@@ -1,0 +1,119 @@
+version: "3.8"
+
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - USER_UID=${D_PUID:-$(whoami)}
+      - USER_GID=${D_PGID:-$(whoami)}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/gitea:/data
+    network:
+      - default
+  
+  jellyfin:
+    image: linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/jellyfin/config:/cofnig
+      - ${D_VOLUME_BASE:-"."}/jellyfin/cache:/cache
+      - ${D_VOLUME_BASE:-"."}/jellyfin/fonts:/usr/share/fonts
+      - ${D_VOLUME_MOVIE:-"./movies"}:/data/movies
+      - ${D_VOLUME_TV:-"./tvshows"}:/data/tvshows
+    network:
+      - default
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+
+  aria2-pro:
+    image: p3terx/aria2-pro:latest
+    container_name: aria2
+    restart: no
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+      - RPC_SECRET=${D_ARIA_RPC_SECRET:-"abcdefghijklmn"}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/aria2/config:/cofnig
+      - ${D_VOLUME_BASE:-"."}/aria2/downloads:/downloads
+    network:
+      - default
+    ports:
+      - "6800:6800"
+      - "6888:6888"
+      - "6888:6888/udp"
+
+  ariang:
+    image: p3terx/ariang:latest
+    container_name: ariang
+    restart: no
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+    network:
+      - default
+    logging:
+      options:
+        max-size: "1m"
+
+  sshwifty:
+    image: niruix/sshwifty:latest
+    container_name: sshwifty
+    restart: no
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+      - SSHWIFTY_SHAREDKEY=${D_SSHW_KEY:-"abcdefghijklmn"}
+    network:
+      - default
+
+  bitwarden:
+    image: bitwardenrs/server:latest
+    container_name: key
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+      - SIGNUPS_ALLOWED=${D_KEY_SIG}
+      - INVITATIONS_ALLOWED=false
+      - WEBSOCKET_ENABLED=true
+      - LOG_FILE=/data/bitwarden.log
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/key:/data
+    network:
+      - default
+
+  drone:
+    image: drone/drone:latest
+    container_name: drone
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+      - DRONE_SERVER_HOST=
+      - DRONE_SERVER_PROTO=
+      - DRONE_RPC_SECRET=
+      - DRONE_GITEA_CLIENT_SECRET=
+      - DRONE_GITEA_CLIENT_ID=
+      - DRONE_GITEA_SERVER=
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/drone:/data
+    network:
+      - default
+
+networks:
+  default:
+    external: {D_NETWROK}
