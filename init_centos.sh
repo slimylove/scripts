@@ -10,13 +10,14 @@ set -x
 readonly SCRIPT_DIR=$(cd "$(dirname "$0")";pwd)
 readonly SCRIPT_USER="${SUDO_USER:$(id -un)}"
 readonly SCRIPT_USER_HOME="$(cat /etc/passwd | grep ^${SCRIPT_USER}: | cut -d: -f 6)"
-readonly GIT_VERSION="2.28.0"
-readonly TMUX_VERSION="2.8"
+readonly GIT_VERSION="${GIT_VERSION:-"2.28.0"}"
+readonly TMUX_VERSION="${TMUX_VERSION:-"2.8"}"
+readonly DOCKER_COMPOSE_VERSION="${DOCKER_COMPOSE_VERSION:-"1.28.5"}"
 
 _exists() {
   cmd="$1"
   if [ -z "$cmd" ]; then
-    _usage "Usage: _exists cmd"
+    printf "Usage: _exists cmd\n" >&2
     return 1
   fi
 
@@ -28,7 +29,7 @@ _exists() {
     which "$cmd" >/dev/null 2>&1
   fi
   ret="$?"
-  printf "$cmd exists=$ret\n"
+  printf "$cmd exists=$ret\n" >&2
   return $ret
 }
 
@@ -49,6 +50,24 @@ _check_yum() {
         && yum clean all \
         && yum makecache
     )
+}
+
+_fast_github_release() {
+  github_release_url="$1"
+  if [ -z "${github_release_url}" ]; then
+    printf "Usage: _exists github_release_url\n" >&2
+    return 1
+  fi
+
+  if ping -c 1 https://gh.api.99988866.xyz > /dev/null 2>&1; then
+    echo "https://gh.api.99988866.xyz/${github_release_url}"
+  elif ping -c 1 github.91chifun.workers.dev > /dev/null 2>&1; then
+    echo "https://github.91chifun.workers.dev/${github_release_url}"
+  else
+    echo "fast github release fail, use github origin url" >&2
+    echo "${github_release_url}"
+    return 2
+  fi
 }
 
 install_base() {
@@ -117,7 +136,7 @@ function install_tmux() {
     # make install libevent
     printf "make install libevent\n"
     cd $SCRIPT_DIR \
-    && curl -LOk https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz \
+    && curl -LOk $(_fast_github_release https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz) \
     && tar -xf libevent-2.1.8-stable.tar.gz \
     && cd libevent-2.1.8-stable \
     && ./configure --prefix=/usr/local \
@@ -127,7 +146,7 @@ function install_tmux() {
     # make install tmux
     printf "make install tmux\n"
     cd $SCRIPT_DIR \
-    && curl -LOk https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz \
+    && curl -LOk $(_fast_github_release https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz) \
     && tar -xf tmux-${TMUX_VERSION}.tar.gz \
     && cd tmux-${TMUX_VERSION} \
     && LDFLAGS="-L/usr/local/lib -Wl,-rpath=/usr/local/lib" ./configure --prefix=/usr/local/tmux \
@@ -188,6 +207,30 @@ install_docker() {
     printf "chekc docker version\n"
     (_exists docker && docker -v > /dev/null 2>&1) \
     && echo "docker($(docker -v)) install ok" \
+    || echo "docker install fail"
+}
+
+install_docker_compose() {
+    _exists docker-compose && docker-compose --version \
+    && printf "$(docker-compose --version) is already installed\n" && return
+
+    # download
+    printf "download docker-compose\n"
+    curl -L $(_fast_github_release "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)") \
+      -o /usr/local/bin/docker-compose
+
+    # add +x
+    printf "add +x to docker-compose\n"
+    chmod +x /usr/local/bin/docker-compose
+
+    # ln -s
+    printf "ln -s to /usr/bin\n"
+    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+    # check version
+    printf "check version"
+    (_exists docker-compose && docker-compose --version > /dev/null 2>&1) \
+    && echo "docker($(docker-compose --version)) install ok" \
     || echo "docker install fail"
 }
 
