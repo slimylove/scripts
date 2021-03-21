@@ -59,8 +59,10 @@ _fast_github_release() {
     return 1
   fi
 
+  # https://github.com/hunshcn/gh-proxy
   if ping -c 1 https://gh.api.99988866.xyz > /dev/null 2>&1; then
     echo "https://gh.api.99988866.xyz/${github_release_url}"
+  # https://github.com/fhefh2015/Fast-GitHub
   elif ping -c 1 github.91chifun.workers.dev > /dev/null 2>&1; then
     echo "https://github.91chifun.workers.dev/${github_release_url}"
   else
