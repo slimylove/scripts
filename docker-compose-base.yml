@@ -7,8 +7,8 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
-      - USER_UID=${D_PUID:-$(whoami)}
-      - USER_GID=${D_PGID:-$(whoami)}
+      - USER_UID=${D_PUID:-$(id -u)}
+      - USER_GID=${D_PGID:-$(id -g)}
     volumes:
       - ${D_VOLUME_BASE:-"."}/gitea:/data
     network:
@@ -20,8 +20,8 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(whoami)}
-      - PGID=${D_PGID:-$(whoami)}
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
     volumes:
       - ${D_VOLUME_BASE:-"."}/jellyfin/config:/cofnig
       - ${D_VOLUME_BASE:-"."}/jellyfin/cache:/cache
@@ -39,8 +39,8 @@ services:
     restart: no
     environment:
       - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(whoami)}
-      - PGID=${D_PGID:-$(whoami)}
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
       - RPC_SECRET=${D_ARIA_RPC_SECRET:-"abcdefghijklmn"}
     volumes:
       - ${D_VOLUME_BASE:-"."}/aria2/config:/cofnig
@@ -58,8 +58,8 @@ services:
     restart: no
     environment:
       - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(whoami)}
-      - PGID=${D_PGID:-$(whoami)}
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
     network:
       - default
     logging:
@@ -72,8 +72,8 @@ services:
     restart: no
     environment:
       - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(whoami)}
-      - PGID=${D_PGID:-$(whoami)}
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
       - SSHWIFTY_SHAREDKEY=${D_SSHW_KEY:-"abcdefghijklmn"}
     network:
       - default
@@ -84,8 +84,8 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(whoami)}
-      - PGID=${D_PGID:-$(whoami)}
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
       - SIGNUPS_ALLOWED=${D_KEY_SIG}
       - INVITATIONS_ALLOWED=false
       - WEBSOCKET_ENABLED=true
@@ -101,8 +101,8 @@ services:
     restart: always
     environment:
       - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(whoami)}
-      - PGID=${D_PGID:-$(whoami)}
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
       - DRONE_SERVER_HOST=
       - DRONE_SERVER_PROTO=
       - DRONE_RPC_SECRET=

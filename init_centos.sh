@@ -8,7 +8,7 @@ set -e
 set -x
 
 readonly SCRIPT_DIR=$(cd "$(dirname "$0")";pwd)
-readonly SCRIPT_USER="${SUDO_USER:$(id -un)}"
+readonly SCRIPT_USER="${SUDO_USER:-$(id -un)}"
 readonly SCRIPT_USER_HOME="$(cat /etc/passwd | grep ^${SCRIPT_USER}: | cut -d: -f 6)"
 readonly GIT_VERSION="${GIT_VERSION:-"2.28.0"}"
 readonly TMUX_VERSION="${TMUX_VERSION:-"2.8"}"
