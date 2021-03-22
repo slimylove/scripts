@@ -13,7 +13,10 @@ services:
       - ${D_VOLUME_BASE:-"."}/nginx:/config
     networks:
       - default
-      - hostnet
+    ports:
+      - "8181:8181"
+      - "54343:54343"
+      - "54380:54380"
 
   gitea:
     image: gitea/gitea:latest
@@ -113,6 +116,3 @@ networks:
   default:
     external: ${D_NETWROK_EXTERNAL:-true}
     name: ${D_NETWROK_NAME:-"my-net"}
-  hostnet:
-    external: true
-    name: host
