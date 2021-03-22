@@ -11,7 +11,7 @@ services:
       - USER_GID=${D_PGID:-$(id -g)}
     volumes:
       - ${D_VOLUME_BASE:-"."}/gitea:/data
-    network:
+    networks:
       - default
   
   jellyfin:
@@ -28,7 +28,7 @@ services:
       - ${D_VOLUME_BASE:-"."}/jellyfin/fonts:/usr/share/fonts
       - ${D_VOLUME_MOVIE:-"./movies"}:/data/movies
       - ${D_VOLUME_TV:-"./tvshows"}:/data/tvshows
-    network:
+    networks:
       - default
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
@@ -45,7 +45,7 @@ services:
     volumes:
       - ${D_VOLUME_BASE:-"."}/aria2/config:/cofnig
       - ${D_VOLUME_BASE:-"."}/aria2/downloads:/downloads
-    network:
+    networks:
       - default
     ports:
       - "6800:6800"
@@ -60,7 +60,7 @@ services:
       - TZ=Asia/Shanghai
       - PUID=${D_PUID:-$(id -u)}
       - PGID=${D_PGID:-$(id -g)}
-    network:
+    networks:
       - default
     logging:
       options:
@@ -75,7 +75,7 @@ services:
       - PUID=${D_PUID:-$(id -u)}
       - PGID=${D_PGID:-$(id -g)}
       - SSHWIFTY_SHAREDKEY=${D_SSHW_KEY:-"abcdefghijklmn"}
-    network:
+    networks:
       - default
 
   bitwarden:
@@ -86,34 +86,16 @@ services:
       - TZ=Asia/Shanghai
       - PUID=${D_PUID:-$(id -u)}
       - PGID=${D_PGID:-$(id -g)}
-      - SIGNUPS_ALLOWED=${D_KEY_SIG}
+      - SIGNUPS_ALLOWED=${D_KEY_SIG:-"false"}
       - INVITATIONS_ALLOWED=false
       - WEBSOCKET_ENABLED=true
       - LOG_FILE=/data/bitwarden.log
     volumes:
       - ${D_VOLUME_BASE:-"."}/key:/data
-    network:
-      - default
-
-  drone:
-    image: drone/drone:latest
-    container_name: drone
-    restart: always
-    environment:
-      - TZ=Asia/Shanghai
-      - PUID=${D_PUID:-$(id -u)}
-      - PGID=${D_PGID:-$(id -g)}
-      - DRONE_SERVER_HOST=
-      - DRONE_SERVER_PROTO=
-      - DRONE_RPC_SECRET=
-      - DRONE_GITEA_CLIENT_SECRET=
-      - DRONE_GITEA_CLIENT_ID=
-      - DRONE_GITEA_SERVER=
-    volumes:
-      - ${D_VOLUME_BASE:-"."}/drone:/data
-    network:
+    networks:
       - default
 
 networks:
   default:
-    external: {D_NETWROK}
+    external: ${D_NETWROK_EXTERNAL:-true}
+    name: ${D_NETWROK_NAME:-"my-net"}
