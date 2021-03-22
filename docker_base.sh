@@ -75,3 +75,5 @@ echo "D_SSHW_KEY=${D_SSHW_KEY}" >> .env
 echo "D_KEY_SIG=${D_KEY_SIG}" >> .env
 echo "D_NETWROK_EXTERNAL=${D_NETWROK_EXTERNAL}" >> .env
 echo "D_NETWROK_NAME=${D_NETWROK_NAME}" >> .env
+
+

@@ -1,6 +1,20 @@
 version: "3.8"
 
 services:
+  nginx:
+    image: slimylove/nginx-proxy-manager:latest
+    container_name: nginx
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/nginx:/config
+    networks:
+      - default
+      - hostnet
+
   gitea:
     image: gitea/gitea:latest
     container_name: gitea
@@ -99,3 +113,6 @@ networks:
   default:
     external: ${D_NETWROK_EXTERNAL:-true}
     name: ${D_NETWROK_NAME:-"my-net"}
+  hostnet:
+    external: true
+    name: host
