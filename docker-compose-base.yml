@@ -1,0 +1,118 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: slimylove/nginx-proxy-manager:latest
+    container_name: nginx
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/nginx:/config
+    networks:
+      - default
+    ports:
+      - "8181:8181"
+      - "54343:54343"
+      - "54380:54380"
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - USER_UID=${D_PUID:-$(id -u)}
+      - USER_GID=${D_PGID:-$(id -g)}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/gitea:/data
+    networks:
+      - default
+  
+  jellyfin:
+    image: linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/jellyfin/config:/cofnig
+      - ${D_VOLUME_BASE:-"."}/jellyfin/cache:/cache
+      - ${D_VOLUME_BASE:-"."}/jellyfin/fonts:/usr/share/fonts
+      - ${D_VOLUME_MOVIE:-"./movies"}:/data/movies
+      - ${D_VOLUME_TV:-"./tvshows"}:/data/tvshows
+    networks:
+      - default
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+
+  aria2-pro:
+    image: p3terx/aria2-pro:latest
+    container_name: aria2
+    restart: "no"
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+      - RPC_SECRET=${D_ARIA_RPC_SECRET:-"abcdefghijklmn"}
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/aria2/config:/cofnig
+      - ${D_VOLUME_BASE:-"."}/aria2/downloads:/downloads
+    networks:
+      - default
+    ports:
+      - "6800:6800"
+      - "6888:6888"
+      - "6888:6888/udp"
+
+  ariang:
+    image: p3terx/ariang:latest
+    container_name: ariang
+    restart: "no"
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+    networks:
+      - default
+    logging:
+      options:
+        max-size: "1m"
+
+  sshwifty:
+    image: niruix/sshwifty:latest
+    container_name: sshwifty
+    restart: "no"
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+      - SSHWIFTY_SHAREDKEY=${D_SSHW_KEY:-"abcdefghijklmn"}
+    networks:
+      - default
+
+  bitwarden:
+    image: bitwardenrs/server:latest
+    container_name: key
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(id -u)}
+      - PGID=${D_PGID:-$(id -g)}
+      - SIGNUPS_ALLOWED=${D_KEY_SIG:-"false"}
+      - INVITATIONS_ALLOWED=false
+      - WEBSOCKET_ENABLED=true
+      - LOG_FILE=/data/bitwarden.log
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/key:/data
+    networks:
+      - default
+
+networks:
+  default:
+    external: ${D_NETWROK_EXTERNAL:-true}
+    name: ${D_NETWROK_NAME:-"my-net"}

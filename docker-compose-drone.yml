@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  drone:
+    image: drone/drone:latest
+    container_name: drone
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+      - DRONE_SERVER_HOST=${D_DRONE_HOST}
+      - DRONE_SERVER_PROTO=${D_DRONE_PROTO:-"https"}
+      - DRONE_RPC_SECRET=${D_DRONE_RPC_SECRET}
+      - DRONE_GITEA_CLIENT_SECRET=${D_DRONE_GITEA_SECRET}
+      - DRONE_GITEA_CLIENT_ID=${D_DRONE_GITEA_ID}
+      - DRONE_GITEA_SERVER=${D_DRONE_GITEA_URL}
+      - DRONE_USER_CREATE=username:${D_DRONE_ADMIN},admin:true
+    volumes:
+      - ${D_VOLUME_BASE:-"."}/drone:/data
+    network:
+      - default
+
+  drone-runner:
+    image: drone/drone-runner-docker:latest
+    container_name: runner
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - PUID=${D_PUID:-$(whoami)}
+      - PGID=${D_PGID:-$(whoami)}
+      - DRONE_RPC_PROTO=${D_DRONE_RUNNER_PROTO:-"http"}
+      - DRONE_RPC_HOST=${D_DRONE_PROTO:-"https"}
+      - DRONE_RPC_SECRET=${D_DRONE_RPC_SECRET}
+      - DRONE_RUNNER_NETWORKS=${D_NETWROK}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    network:
+      - default
+
+networks:
+  default:
+    external: ${D_NETWROK:-"my-net"}
